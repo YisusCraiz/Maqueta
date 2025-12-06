@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PapasNova — Maqueta Interactiva</title>
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-dark:#05060a;
+      --bg-mid:#07112a;
+      --card:#0f1724; /* oscuro para tarjetas */
+      --accent-blue:#0b63ff;
+      --accent-yellow:#ffd54a;
+      --muted:#cbd5e1;
+      --glass: rgba(255,255,255,0.04);
+      --shadow-lg: 0 20px 50px rgba(2,6,23,0.6);
+      --neon: 0 0 18px rgba(11,99,255,0.14);
+      --success:#3fb46a;
+      --danger:#ff4d4d;
+      --glass-blur: blur(6px);
+    }
+
+    /* Reset + base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      color:var(--muted);
+      background:
+        radial-gradient(1200px 400px at 10% 10%, rgba(11,99,255,0.06), transparent 8%),
+        radial-gradient(800px 300px at 90% 90%, rgba(255,213,74,0.04), transparent 6%),
+        linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 65%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding-bottom:28px;
+    }
+
+    header{
+      display:flex;gap:16px;align-items:center;justify-content:space-between;
+      padding:18px 28px;background:linear-gradient(90deg,#02102e 0%, #062a74 50%, #07213a 100%);
+      color:var(--accent-yellow); box-shadow: var(--shadow-lg); border-bottom: 1px solid rgba(255,213,74,0.06);
+    }
+    header h1{margin:0;font-size:20px;letter-spacing:0.6px;color:var(--accent-yellow);text-shadow:0 2px 12px rgba(255,213,74,0.06)}
+    header .subtitle{font-size:13px;color:rgba(255,255,255,0.85)}
+
+    main{padding:20px;max-width:1200px;margin:18px auto;box-sizing:border-box}
+
+    /* Panels */
+    .top-row{display:flex;gap:24px;flex-wrap:wrap}
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: 0 8px 30px rgba(2,6,23,0.45);
+      border-radius:14px;padding:16px;flex:1;min-width:300px;border:1px solid rgba(255,255,255,0.03);
+      backdrop-filter: var(--glass-blur);
+    }
+    .panel h3{margin:0 0 8px 0;color:var(--accent-yellow)}
+    .panel.maqueta-wrap{padding:12px}
+
+    /* Brochure panel accent */
+    .panel.brochure-panel{position:relative;overflow:hidden;border-left:4px solid rgba(11,99,255,0.16)}
+    .toggle-brochure{
+      position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:10px;border:none;
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      color:var(--muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;
+      box-shadow:0 6px 18px rgba(2,6,23,0.5);
+      border:1px solid rgba(255,255,255,0.04);
+    }
+
+    /* Maqueta stage */
+    .maqueta-wrap{height:auto;min-height:520px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;padding-top:6px}
+    .stage{
+      width:100%; max-width:1100px; height:560px; 
+      /* Mobile-first: reducir altura en móviles */
+    }
+    @media (max-width:768px){
+      .stage{
+        height:480px;
+        padding:16px 12px;
+      }
+      .building{
+        font-size:11px !important;
+      }
+      .building .label{
+        font-size:10px;
+        padding:4px 6px;
+      }
+    }
+    @media (max-width:480px){
+      .stage{
+        height:420px;
+        padding:12px 8px;
+      }
+      .building{
+        font-size:10px !important;
+      }
+      .building .label{
+        font-size:9px;
+        padding:3px 5px;
+      }
+    }
+    .ground{
+      position:absolute;left:0;right:0;bottom:12px;height:140px;
+      background: linear-gradient(180deg,#0b632d,#2fb45f);
+      border-radius:12px; box-shadow: 0 20px 60px rgba(2,6,23,0.5);
+      transform:translateZ(-10px);
+      overflow:hidden;
+    }
+
+    /* Buildings: vivid accents, hover glow and lift */
+    .building{
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      position:absolute;width:150px;height:100px;
+      border-radius:10px;border:2px solid rgba(255,255,255,0.04);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;
+      font-size:13px;text-align:center;box-shadow:0 12px 40px rgba(2,6,23,0.6);
+      transform-style:preserve-3d;padding:8px;box-sizing:border-box;cursor:pointer;overflow:hidden;
+      transition: left 260ms cubic-bezier(.2,.9,.2,1), top 260ms, width 260ms, height 260ms, transform 220ms;
+      backdrop-filter: blur(4px);
+    }
+    .building::before{
+      content:'';position:absolute;inset:0;background:linear-gradient(135deg, rgba(0,0,0,0.35), rgba(0,0,0,0.15));z-index:1;border-radius:10px
+    }
+    .building .label{position:absolute;bottom:10px;left:12px;background:linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.35));padding:6px 10px;border-radius:8px;font-size:12px;color:#fff;z-index:10;border:1px solid rgba(255,255,255,0.08)}
+    /* Color accents by zone (bright borders and subtle glow) */
+    .building.recepcion{box-shadow:0 10px 40px rgba(255,213,74,0.08);border-color:rgba(255,213,74,0.18)}
+    .building.marketing{box-shadow:0 10px 40px rgba(11,99,255,0.08);border-color:rgba(11,99,255,0.18)}
+    .building.almacen_mp{box-shadow:0 10px 40px rgba(34,197,94,0.06);border-color:rgba(34,197,94,0.12)}
+    .building.laboratorio{box-shadow:0 10px 40px rgba(123,65,255,0.06);border-color:rgba(123,65,255,0.12)}
+    .building.produccion{box-shadow:0 10px 40px rgba(255,99,71,0.06);border-color:rgba(255,99,71,0.12)}
+
+    .building.small{width:110px;height:78px;font-size:12px}
+    .building:hover{transform:translateY(-8px) scale(1.06); box-shadow:0 30px 80px rgba(2,6,23,0.7); border-color: rgba(255,255,255,0.12)}
+    .building:active{transform:translateY(-4px) scale(1.03)}
+
+    /* Neon rim around stage */
+    .stage::before{
+      content:'';position:absolute;inset:6px;border-radius:12px;
+      box-shadow: 0 0 40px rgba(11,99,255,0.06), inset 0 0 40px rgba(255,213,74,0.02);
+      pointer-events:none;
+    }
+
+    /* Controls floating pill */
+    .controls{
+      display:flex;gap:10px;margin-top:0;align-items:center;position:fixed;top:20px;right:20px;z-index:60;
+      background:linear-gradient(90deg, rgba(3,6,20,0.6), rgba(8,14,35,0.6));
+      padding:10px 14px;border-radius:14px;box-shadow:0 10px 30px rgba(2,6,23,0.6);backdrop-filter: blur(6px);
+      border:1px solid rgba(255,255,255,0.03)
+    }
+    button{
+      background:linear-gradient(90deg,var(--accent-blue), #0b3b8f);
+      border:none;color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;
+      box-shadow:0 8px 24px rgba(11,99,255,0.12);transition:transform 140ms, box-shadow 140ms, opacity 140ms;
+    }
+    button:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(11,99,255,0.18)}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600}
+    button[aria-label]{padding:8px}
+
+    .info{font-size:14px;color:var(--muted);margin-top:8px}
+
+    /* Modal / mini-info styling: glass panels with accent */
+    .mini-info{
+      position:fixed;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:12px;padding:12px;max-width:300px;font-size:13px;z-index:120;display:none;
+      border:1px solid rgba(11,99,255,0.08);box-shadow:0 18px 50px rgba(2,6,23,0.6);backdrop-filter:blur(6px)
+    }
+    .mini-info .title{font-weight:700;color:var(--accent-yellow);margin-bottom:6px}
+    .mini-info .body{color:var(--muted);margin-bottom:8px}
+    .mini-info .actions{display:flex;gap:8px;justify-content:flex-end}
+    .mini-info button{padding:6px 8px;font-size:13px;border-radius:8px}
+    .mini-info .close{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+    .modal-back{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:90;
+      background:linear-gradient(180deg, rgba(2,6,23,0.7), rgba(2,6,23,0.86));
+      padding:24px;
+    }
+    .modal{
+      width:min(920px,96%);background:linear-gradient(180deg, rgba(10,18,36,0.96), rgba(7,12,28,0.94));
+      padding:18px;border-radius:14px;box-shadow:0 40px 90px rgba(2,6,23,0.8);max-height:88vh;overflow:auto;border:1px solid rgba(11,99,255,0.06)
+    }
+    .modal strong{color:var(--accent-yellow)}
+
+    /* Game drawer specifics */
+    .modal-back.game-drawer{align-items:flex-end;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6), rgba(2,6,23,0.76));pointer-events:auto}
+    .modal-back.game-drawer .modal{width:100%;max-width:1000px;border-radius:12px 12px 0 0;padding:14px;transform:translateY(100%);transition:transform 320ms cubic-bezier(.2,.9,.2,1)}
+    .modal-back.game-drawer.open{background:linear-gradient(rgba(2,6,23,0.72), rgba(2,6,23,0.88));}
+    .modal-back.game-drawer.open .modal{transform:translateY(0)}
+    #gameCanvas{border-radius:12px;background:linear-gradient(180deg,#071530,#052033);box-shadow:inset 0 6px 30px rgba(11,99,255,0.04), 0 30px 80px rgba(2,6,23,0.6)}
+
+    /* Milestone icons */
+    .milestones{display:flex;gap:10px;align-items:center}
+    .milestone{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.02);display:inline-flex;align-items:center;justify-content:center;font-size:16px;position:relative;opacity:.45;border:1px solid rgba(255,255,255,0.03)}
+    .milestone.achieved{background:linear-gradient(90deg,var(--accent-yellow), #ffb347);opacity:1;box-shadow:0 12px 40px rgba(255,180,60,0.18);transform:scale(1.06)}
+    .milestone .check{position:absolute;right:-6px;top:-6px;background:#07112a;color:#fff;border-radius:50%;font-size:10px;padding:2px 4px;display:none}
+    .milestone.achieved .check{display:block}
+
+    footer{color:rgba(255,255,255,0.45);text-align:center;padding:18px;margin-top:18px;font-size:13px}
+
+    /* Responsive tweaks */
+    @media (max-width:900px){
+      .stage{height:460px}
+      .maqueta-wrap{height:520px}
+    }
+
+    /* Mejoras responsive para la maqueta */
+    .maqueta-wrap{height:auto;min-height:520px}
+    .stage{padding:28px 24px;box-sizing:border-box}
+    .building{transition: left 260ms cubic-bezier(.2,.9,.2,1), top 260ms, width 260ms, height 260ms, transform 220ms}
+    .ground{bottom:12px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PapasNova — Maqueta interactiva</h1>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div style="font-size:13px;opacity:.92">Explora la fábrica y juega para ganar premios</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Botones flotantes en esquina superior derecha -->
+    <div class="controls">
+      <button id="downloadBrochureBtn">📄 PDF</button>
+      <button id="openGameBtn">🎮 Juego</button>
+      <button id="resetView" class="ghost">↺ Reset</button>
+    </div>
+
+    <div class="top-row">
+      <!-- Maqueta panel -->
+      <div class="panel maqueta-wrap maqueta-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div><strong>Maqueta 2.5D</strong><div class="muted">Gira con el dedo o arrastra con el mouse</div></div>
+        </div>
+        <div class="stage" id="stage" aria-label="Maqueta 3D">
+          <!-- Buildings (click to open info) -->
+          <div class="building recepcion small" data-key="recepcion"><div class="label">Recepción</div></div>
+          <div class="building marketing small" data-key="marketing"><div class="label">Marketing</div></div>
+          <div class="building almacen_mp" data-key="almacen_mp"><div class="label">Almacén de materia prima</div></div>
+          <div class="building laboratorio" data-key="laboratorio"><div class="label">Laboratorio</div></div>
+          <div class="building sala_reuniones small" data-key="sala_reuniones"><div class="label">Sala de reuniones</div></div>
+          <div class="building enfermeria small" data-key="enfermeria"><div class="label">Enfermería</div></div>
+
+          <div class="building produccion" data-key="produccion"><div class="label">Producción</div></div>
+          <div class="building almacen_pt" data-key="almacen_pt"><div class="label">Almacén producto terminado</div></div>
+          <div class="building distribucion" data-key="distribucion"><div class="label">Distribución</div></div>
+          <div class="building mantenimiento small" data-key="mantenimiento"><div class="label">Mantenimiento</div></div>
+
+          <!-- legacy ground -->
+          <div class="ground"></div>
+        </div>
+      </div>
+
+      <!-- Brochure / Info panel -->
+      <div class="panel brochure-panel">
+        <!-- botón hamburguesa para plegar/desplegar -->
+        <button id="toggleBrochureBtn" class="toggle-brochure" aria-label="Alternar folleto" title="Mostrar/ocultar folleto">☰</button>
+        <h3 style="margin-top:0">Folleto</h3>
+        <div class="brochure" id="brochurePreview">
+          <!-- Contenido generado por JavaScript. Edita el bloque DATA_BROCHURE en el script. -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>Diseñado para presentación de maqueta — PapasNova</footer>
+
+  <!-- Mini info contextual (se muestra al hacer click en cada edificio) -->
+  <div id="miniInfo" class="mini-info" role="dialog" aria-hidden="true">
+    <div class="title" id="miniTitle">Título</div>
+    <div class="body" id="miniBody">Descripción breve...</div>
+    <div class="actions">
+      <button id="miniMore" class="ghost">Más</button>
+      <button id="miniClose" class="close">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- Modal template -->
+  <div class="modal-back" id="modalBack" role="dialog" aria-modal="true">
+    <div class="modal" id="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong id="modalTitle">Título</strong>
+        <button id="closeModal" class="ghost">Cerrar</button>
+      </div>
+      <div id="modalBody" style="margin-top:12px"></div>
+      <div style="margin-top:12px;text-align:right"><button id="modalClose2">Listo</button></div>
+    </div>
+  </div>
+
+  <!-- Game modal -->
+  <div class="modal-back" id="gameBack">
+    <div class="modal" style="max-width:760px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>🎮 Papa Runner</strong>
+        <button id="closeGame" class="ghost">X</button>
+      </div>
+      <p class="muted" style="margin-top:8px">Salta los obstáculos con ESPACIO (desktop) o tocando la pantalla (móvil). Consigue <strong id="targetPointsSpan">100</strong> puntos para reclamar premio.</p>
+      <canvas id="gameCanvas" width="700" height="300"></canvas>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div class="muted">Puntaje: <span id="score">0</span></div>
+        <div>
+          <button id="restartGame" class="ghost">Reiniciar</button>
+          <button id="claimPrize" style="display:none;background:var(--green)">🎁 Reclamar premio</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Libraries: jsPDF for PDF generation (CDN). Si lo quieres offline, descarga y cambia la referencia. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+  // Toggle brochure collapsed/expanded
+  (function(){
+    const btn = document.getElementById('toggleBrochureBtn');
+    if(!btn) return;
+    function setCollapsed(collapsed){
+      document.body.classList.toggle('brochure-collapsed', collapsed);
+      btn.setAttribute('aria-expanded', String(!collapsed));
+    }
+    // start expanded
+    setCollapsed(false);
+    btn.addEventListener('click', ()=> setCollapsed(!document.body.classList.contains('brochure-collapsed')));
+  })();
+  /* ==========================
+     Aquí está el contenido del folleto que se puede editar.
+     Cambia los textos y secciones según necesites.
+     ========================== */
+  const DATA_BROCHURE = {
+    title: "PapasNova",
+    lema: "Sabor que une, calidad que perdura.",
+    porQue: "PapasNova nace para ofrecer snacks de papas fritas con ingredientes locales, procesos controlados y un compromiso con la comunidad local y la sustentabilidad.",
+    mision: "Producir snacks sabrosos y seguros con métodos responsables y asegurar bienestar laboral.",
+    vision: "Ser reconocidos regionalmente por calidad y prácticas responsables dentro de 5 años.",
+    valores: ["Calidad", "Seguridad alimentaria", "Trabajo en equipo", "Sustentabilidad", "Innovación"],
+    zonas: {
+      "Producción": "Donde se realiza el pelado, corte y fritura. Área con controles de higiene estrictos.",
+      "Laboratorio": "Se realizan pruebas de calidad, control de PH, textura y pruebas microbiológicas.",
+      "Recursos Humanos": "Gestiona nóminas, reclutamiento, capacitaciones y bienestar del personal.",
+      "Enfermería": "Atención básica para el personal y control de primeros auxilios.",
+      "Distribución": "Almacenamiento y logística para entregar productos a tiendas y clientes."
+    },
+    proceso: [
+      "Recepción y selección de materia prima (papas de calidad).",
+      "Lavado y pelado.",
+      "Corte y enjuague para eliminar almidón.",
+      "Fritura y control de temperatura.",
+      "Salado y empaque.",
+      "Control final de calidad y despacho."
+    ],
+    contacto: {
+      direccion: "Av. de la Maqueta #123, Ciudad, Estado",
+      telefono: "(+52) 55-1234-5678",
+      email: "contacto@papasnova.mx"
+    },
+    premioPuntos: 100, // puntos necesarios para reclamar
+  };
+
+  /* ===========================
+     RENDER FOLLETO PREVIEW
+     =========================== */
+  function renderBrochurePreview(){
+    const el = document.getElementById('brochurePreview');
+    const d = DATA_BROCHURE;
+    el.innerHTML = `
+      <h2 class="h2">${d.title}</h2>
+      <div class="sect"><em>${d.lema}</em></div>
+      <div class="sect"><strong>¿Por qué fue creada?</strong><div class="muted">${d.porQue}</div></div>
+      <div class="sect"><strong>Misión</strong><div class="muted">${d.mision}</div></div>
+      <div class="sect"><strong>Visión</strong><div class="muted">${d.vision}</div></div>
+      <div class="sect"><strong>Valores</strong><div class="muted">${d.valores.join(', ')}</div></div>
+      <div class="sect"><strong>Zonas de la empresa</strong>
+        <ul>
+          ${Object.entries(d.zonas).map(([k,v])=>`<li><strong>${k}:</strong> ${v}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="sect"><strong>Proceso de elaboración</strong>
+        <ol>${d.proceso.map(p=>`<li>${p}</li>`).join('')}</ol>
+      </div>
+      <div class="sect"><strong>Contacto</strong>
+        <div class="muted">${d.contacto.direccion}<br>${d.contacto.telefono} · ${d.contacto.email}</div>
+      </div>
+    `;
+    document.getElementById('targetPointsSpan').textContent = d.premioPuntos;
+  }
+  renderBrochurePreview();
+
+  /* ===========================
+     ROTATE STAGE (touch + mouse)
+     =========================== */
+  (function(){
+    const stage = document.getElementById('stage');
+    let dragging=false;
+    let startX=0,startY=0;
+    let rotX=12,rotY=-20; // initial angles
+    function apply(){
+      stage.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(0)`;
+    }
+    apply();
+
+    function down(e){
+      dragging=true;
+      const p = getPoint(e);
+      startX = p.x; startY = p.y;
+      stage.style.transition = 'none';
+    }
+    function move(e){
+      if(!dragging) return;
+      const p = getPoint(e);
+      const dx = p.x - startX;
+      const dy = p.y - startY;
+      startX = p.x; startY = p.y;
+      // sensitivity tuning
+      rotY += dx * 0.18;
+      rotX -= dy * 0.12;
+      rotX = Math.max(-25, Math.min(30, rotX));
+      apply();
+    }
+    function up(){
+      dragging=false;
+      stage.style.transition = 'transform 120ms linear';
+    }
+    function getPoint(e){
+      if(e.touches && e.touches[0]) return {x:e.touches[0].clientX,y:e.touches[0].clientY};
+      return {x:e.clientX,y:e.clientY};
+    }
+    // pointer events for unified touch+mouse
+    stage.addEventListener('pointerdown', (e)=>{ stage.setPointerCapture(e.pointerId); down(e); });
+    stage.addEventListener('pointermove', move);
+    stage.addEventListener('pointerup', up);
+    stage.addEventListener('pointercancel', up);
+    // reset button
+    document.getElementById('resetView').addEventListener('click', ()=>{
+      rotX=12; rotY=-20; apply();
+    });
+    // open info on click of building (tap)
+    document.querySelectorAll('.building').forEach(b=>{
+      b.style.cursor='pointer';
+      b.addEventListener('click', ()=> openBuildingInfo(b.dataset.key));
+    });
+  })();
+
+  /* ===========================
+     BUILDING INFOS (modal)
+     =========================== */
+  const BUILDING_INFO = {
+    recepcion: {title:'Recepción', body:'Punto de atención a visitantes y control de acceso. Aquí se reciben documentos y coordina la entrada de personal y proveedores.'},
+    marketing: {title:'Marketing', body:'Equipo encargado de comunicación, branding y promoción de productos. Genera materiales y campañas.'},
+    almacen_mp: {title:'Almacén de materia prima', body:'Zona destinada a la recepción y almacenamiento de papas y otros insumos. Control de temperatura y stocks.'},
+    laboratorio: {title:'Laboratorio', body:'Control de calidad: análisis físico-químicos y microbiológicos para garantizar seguridad alimentaria.'},
+    sala_reuniones: {title:'Sala de reuniones', body:'Espacio para reuniones operativas y estratégicas, coordinación entre áreas y capacitaciones.'},
+    enfermeria: {title:'Enfermería', body:'Atención a empleados, control de botiquines, gestión de ausencias y primeros auxilios.'},
+    produccion: {title:'Producción', body:'Líneas de producción: lavado, corte, freído, secado y empaque. Control de flujo y limpieza.'},
+    almacen_pt: {title:'Almacén de producto terminado', body:'Zona de almacenamiento de producto listo para despacho; control de inventarios y FIFO.'},
+    distribucion: {title:'Distribución', body:'Almacenamiento, control de inventarios y logística para entrega a clientes y tiendas.'},
+    mantenimiento: {title:'Mantenimiento', body:'Equipo responsable del mantenimiento preventivo y correctivo de maquinaria y equipos.'}
+  };
+  function openBuildingInfo(key){
+    const info = BUILDING_INFO[key] || {title:'Info','body':'Información no disponible'};
+    document.getElementById('modalTitle').textContent = info.title;
+    document.getElementById('modalBody').innerHTML = `<p class="muted">${info.body}</p>`;
+    showModal();
+  }
+  function showModal(){document.getElementById('modalBack').style.display='flex'}
+  function hideModal(){document.getElementById('modalBack').style.display='none'}
+  document.getElementById('closeModal').onclick = hideModal;
+  document.getElementById('modalClose2').onclick = hideModal;
+
+  /* ===========================
+     MINI-VENTANA CONTEXTUAL PARA BUILDINGS
+     =========================== */
+  (function(){
+    const mini = document.getElementById('miniInfo');
+    const miniTitle = document.getElementById('miniTitle');
+    const miniBody = document.getElementById('miniBody');
+    const miniMore = document.getElementById('miniMore');
+    const miniClose = document.getElementById('miniClose');
+    const stage = document.getElementById('stage');
+
+    function showMiniInfo(key, targetEl){
+      const info = BUILDING_INFO[key] || {title:key, body:'Información no disponible'};
+      miniTitle.textContent = info.title;
+      miniBody.textContent = info.body;
+      mini.setAttribute('aria-hidden','false');
+      mini.style.display = 'block';
+
+      // calcular posición relativa al target dentro de viewport
+      const tr = targetEl.getBoundingClientRect();
+      const sr = stage.getBoundingClientRect();
+      // preferir colocar encima del rectángulo; si no cabe, colocarlo a la derecha
+      const margin = 8;
+      let left = tr.left + (tr.width/2) - 130; // centrar horizontal (mini max-width 260)
+      let top = tr.top - mini.offsetHeight - margin;
+      // si no cabe arriba, colocamos abajo
+      if(top < 12) top = tr.bottom + margin;
+      // ajustar límites de ventana
+      const maxRight = window.innerWidth - 12;
+      if(left + 260 > maxRight) left = maxRight - 260;
+      if(left < 12) left = 12;
+
+      mini.style.left = `${Math.round(left)}px`;
+      mini.style.top = `${Math.round(top)}px`;
+
+      // acción "Más" abre el modal con info completa
+      miniMore.onclick = ()=> { openBuildingInfo(key); hideMiniInfo(); };
+      miniClose.onclick = hideMiniInfo;
+
+      // cerrar al hacer click fuera
+      setTimeout(()=>{ // dejar un frame para evitar que el click que abrió lo cierre
+        window.addEventListener('pointerdown', outsideHandler);
+      }, 20);
+
+      function outsideHandler(e){
+        if(!mini.contains(e.target) && !targetEl.contains(e.target)){
+          hideMiniInfo();
+        }
+      }
+      // guardar handler para removerlo al cerrar
+      mini._outsideHandler = outsideHandler;
+    }
+
+    function hideMiniInfo(){
+      mini.style.display = 'none';
+      mini.setAttribute('aria-hidden','true');
+      if(mini._outsideHandler) window.removeEventListener('pointerdown', mini._outsideHandler);
+      mini._outsideHandler = null;
+    }
+
+    // reemplaza el comportamiento de click en buildings para mostrar la mini-ventana
+    document.querySelectorAll('.building').forEach(b=>{
+      // conservar cursor pointer
+      b.style.cursor = 'pointer';
+      // evitar conflictos con arrastre de la maqueta: sólo abrir si no hubo movimiento
+      let moved = false;
+      b.addEventListener('pointerdown', ()=> { moved = false; });
+      b.addEventListener('pointermove', ()=> { moved = true; });
+      b.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(moved) return; // si hubo arrastre, no abrir
+        showMiniInfo(b.dataset.key, b);
+      });
+    });
+
+    // exponer control desde consola si se necesita
+    window.showMiniInfo = showMiniInfo;
+    window.hideMiniInfo = hideMiniInfo;
+  })();
+
+  /* ===========================
+     PDF GENERATION (jsPDF)
+     =========================== */
+  document.getElementById('downloadBrochureBtn').addEventListener('click', async ()=>{
+    // using jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'pt',format:'a4'});
+    const margin = 40;
+    let y = 40;
+    const d = DATA_BROCHURE;
+    doc.setFontSize(18); doc.text(d.title, margin, y); y+=22;
+    doc.setFontSize(12); doc.setTextColor(80);
+    doc.text(d.lema, margin, y); y+=24;
+    doc.setFontSize(13); doc.text('¿Por qué fue creada?', margin, y); y+=16;
+    doc.setFontSize(11); doc.text(doc.splitTextToSize(d.porQue, 520), margin, y); y += 36;
+    doc.setFontSize(13); doc.text('Misión', margin, y); y+=16;
+    doc.setFontSize(11); doc.text(doc.splitTextToSize(d.mision, 520), margin, y); y+=28;
+    doc.setFontSize(13); doc.text('Zonas de la empresa', margin, y); y+=18;
+    doc.setFontSize(11);
+    Object.entries(d.zonas).forEach(([k,v])=>{
+      doc.text(`- ${k}: ${v}`, margin, y);
+      y+=16;
+      if(y>700){doc.addPage(); y=40;}
+    });
+    y+=6;
+    doc.setFontSize(13); doc.text('Proceso de elaboración', margin, y); y+=16;
+    d.proceso.forEach((p,i)=>{
+      doc.setFontSize(11);
+      doc.text(`${i+1}. ${p}`, margin, y); y+=14;
+      if(y>720){doc.addPage(); y=40;}
+    });
+    y += 10;
+    doc.setFontSize(12); doc.text('Contacto:', margin, y); y+=14;
+    doc.setFontSize(10); doc.text(`${d.contacto.direccion} · ${d.contacto.telefono} · ${d.contacto.email}`, margin, y);
+    // save
+    doc.save('Folleto_PapasNova.pdf');
+  });
+
+  /* ===========================
+     GAME: Papa Runner (Canvas)
+     =========================== */
+  (function(){
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width, H = canvas.height;
+    // scaling for high-DPI screens
+    function resizeCanvas(){
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      W = Math.floor(rect.width);
+      H = Math.floor(rect.height);
+      canvas.width = W * ratio;
+      canvas.height = H * ratio;
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      ctx.setTransform(ratio,0,0,ratio,0,0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // game state
+    let running=false, score=0, speed=4, obstacles=[], frame=0, gameOver=false;
+    const target = DATA_BROCHURE.premioPuntos || 100;
+
+    // player
+    const player = { x:60, y: H - 60, w:42, h:42, vy:0, gravity:0.9, grounded:true, color:'#f5b84c' };
+    // simple obstacle prototype
+    function spawnObstacle(){
+      const h = 24 + Math.random()*36;
+      obstacles.push({x:W+20, y:H-48, w:20 + Math.random()*20, h:h});
+    }
+
+    function resetGame(){
+      score=0; speed=4; obstacles=[]; frame=0; gameOver=false;
+      player.y = H - 60; player.vy=0; player.grounded=true;
+    }
+
+    function update(){
+      if(!running) return;
+      frame++;
+      // spawn obstacles periodically
+      if(frame % Math.max(20, Math.floor(80 - speed*6)) === 0){
+        if(Math.random() > 0.2) spawnObstacle();
+      }
+      // increase speed over time
+      if(frame % 300 === 0) speed += 0.6;
+
+      // player physics
+      if(!player.grounded){
+        player.vy += player.gravity;
+        player.y += player.vy;
+        if(player.y >= H - 60){ player.y = H - 60; player.vy=0; player.grounded=true; }
+      }
+
+      // obstacles move
+      for(let i=obstacles.length-1;i>=0;i--){
+        obstacles[i].x -= speed;
+        // passed obstacle -> increment score once
+        if(!obstacles[i].scored && obstacles[i].x + obstacles[i].w < player.x){
+          obstacles[i].scored = true;
+          score += 10;
+          document.getElementById('score').textContent = score;
+        }
+        // collision simple AABB
+        if(collideRect(player, obstacles[i])) gameOver = true;
+        if(obstacles[i].x + obstacles[i].w < -50) obstacles.splice(i,1);
+      }
+      if(gameOver){
+        running=false;
+        // show claim if reached threshold
+        if(score >= target){
+          document.getElementById('claimPrize').style.display='inline-block';
+        }
+      }
+    }
+
+    function collideRect(a,b){
+      return !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
+    }
+
+    function draw(){
+      // clear
+      ctx.clearRect(0,0,W,H);
+      // background sky already via css, but we'll draw ground
+      // ground
+      ctx.fillStyle = '#4da85b';
+      ctx.fillRect(0, H-40, W, 40);
+      // player (simple potato shape: oval + eyes)
+      ctx.fillStyle = player.color;
+      roundRect(ctx, player.x, player.y - player.h, player.w, player.h, 10, true, false);
+      // eyes
+      ctx.fillStyle='#111';
+      ctx.fillRect(player.x + 10, player.y - player.h + 10, 6,6);
+      ctx.fillRect(player.x + 26, player.y - player.h + 10, 6,6);
+
+      // obstacles (boxes)
+      ctx.fillStyle = '#8b5e3c';
+      obstacles.forEach(o=>{
+        roundRect(ctx, o.x, o.y - o.h, o.w, o.h, 4, true, false);
+      });
+
+      // score
+      ctx.fillStyle = '#111';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('Puntos: ' + score, 10, 20);
+
+      if(!running && frame===0){
+        ctx.fillStyle='rgba(0,0,0,0.05)';
+        ctx.fillRect(W/2-120, H/2-30, 240, 60);
+        ctx.fillStyle = '#111';
+        ctx.font='16px sans-serif';
+        ctx.fillText('Toca para iniciar', W/2-54, H/2+6);
+      }
+      if(gameOver){
+        ctx.fillStyle='rgba(0,0,0,0.5)';
+        ctx.fillRect(0,0,W,H);
+        ctx.fillStyle='#fff';
+        ctx.font='22px sans-serif';
+        ctx.fillText('¡Juego terminado!', W/2-80, H/2-6);
+      }
+    }
+
+    function loop(){
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    // utility draw rounded rect
+    function roundRect(ctx, x, y, w, h, r, fill, stroke){
+      if(typeof r === 'undefined') r = 5;
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.arcTo(x+w, y, x+w, y+h, r);
+      ctx.arcTo(x+w, y+h, x, y+h, r);
+      ctx.arcTo(x, y+h, x, y, r);
+      ctx.arcTo(x, y, x+w, y, r);
+      ctx.closePath();
+      if(fill) ctx.fill();
+      if(stroke) ctx.stroke();
+    }
+
+    // input: jump
+    function jump(){
+      if(gameOver) return;
+      if(player.grounded){
+        player.vy = -12;
+        player.grounded = false;
+      }
+      if(!running){ running=true; frame=1; }
+    }
+
+    // keyboard
+    window.addEventListener('keydown', (e)=>{
+      if(e.code === 'Space'){ e.preventDefault(); jump(); }
+      if(e.code === 'KeyR'){ resetGame(); running=true; frame=1; }
+    });
+
+    // touch/click on canvas to jump or start
+    canvas.addEventListener('pointerdown', (e)=>{ jump(); });
+
+    // modal controls
+    document.getElementById('openGameBtn').addEventListener('click', ()=>{
+      document.getElementById('gameBack').style.display='flex';
+      resetGame(); running=false; frame=0; document.getElementById('score').textContent = '0';
+      document.getElementById('claimPrize').style.display='none';
+    });
+    document.getElementById('closeGame').addEventListener('click', ()=> document.getElementById('gameBack').style.display='none');
+    document.getElementById('restartGame').addEventListener('click', ()=>{ resetGame(); running=true; frame=1; document.getElementById('score').textContent = '0'; document.getElementById('claimPrize').style.display='none'; });
+
+    // claim prize button — aquí controlas el proceso de canje físico.
+    document.getElementById('claimPrize').addEventListener('click', ()=>{
+      // ejemplo: generar un cupón con jsPDF con nombre del jugador (si hubieras pedido nombre)
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({unit:'pt',format:'a4'});
+      doc.setFontSize(20); doc.text('Cupón de premio - PapasNova', 40, 80);
+      doc.setFontSize(12); doc.text(`Has alcanzado ${score} puntos y obtienes un dulce. Presenta este PDF en recepción para canjear.`, 40, 110);
+      doc.text('Código: PAPASNOVA-' + Math.floor(Math.random()*90000+10000), 40, 150);
+      doc.save('Cupon_PapasNova.pdf');
+    });
+
+    // expose for debugging
+    window._game = { resetGame };
+  })();
+
+  /* ===========================
+     CLAIM: If you want to show 'reclamar' when modal closes, handled above.
+     =========================== */
+
+  /* ===========================
+     LAYOUT RESPONSIVO DE BUILDINGS (MEJORADO)
+     Ajusta tamaño de cuadros según pantalla: móvil, tablet, desktop
+     =========================== */
+  (function(){
+    const stage = document.getElementById('stage');
+    if(!stage) return;
+    const buildings = Array.from(stage.querySelectorAll('.building'));
+    
+    function layoutBuildings(){
+      if(!buildings.length) return;
+      
+      const stRect = stage.getBoundingClientRect();
+      const groundEl = stage.querySelector('.ground');
+      const groundH = groundEl ? groundEl.offsetHeight : 140;
+      
+      // Detectar viewport size y ajustar parámetros
+      const viewportWidth = window.innerWidth;
+      let baseW, baseH, pad, gap;
+      
+      if(viewportWidth < 480){
+        // Mobile pequeño (< 480px)
+        baseW = 70;
+        baseH = 55;
+        pad = 8;
+        gap = 10;
+      } else if(viewportWidth < 768){
+        // Mobile/Tablet (480-768px)
+        baseW = 90;
+        baseH = 65;
+        pad = 12;
+        gap = 12;
+      } else if(viewportWidth < 1024){
+        // Tablet grande (768-1024px)
+        baseW = 110;
+        baseH = 75;
+        pad = 16;
+        gap = 14;
+      } else {
+        // Desktop (> 1024px)
+        baseW = 140;
+        baseH = 90;
+        pad = 24;
+        gap = 18;
+      }
+
+      const availableW = Math.max(100, stRect.width - pad*2);
+      const cols = Math.max(2, Math.floor((availableW + gap) / (baseW + gap)));
+      const rows = Math.ceil(buildings.length / cols);
+      
+      // Calcular tamaño dinámico real basado en columns
+      const actualW = Math.floor((availableW - (cols-1)*gap) / cols);
+      const actualH = Math.floor(actualW * 0.65); // mantener proporción
+      
+      const gridW = cols*actualW + (cols-1)*gap;
+      const offsetX = Math.max(0, (stRect.width - gridW) / 2);
+
+      const availableH = Math.max(150, stRect.height - groundH - pad*2);
+      const totalGridH = rows*actualH + (rows-1)*gap;
+      const offsetYBase = Math.max(pad, (availableH - totalGridH) / 2 + pad);
+
+      buildings.forEach((b, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const left = offsetX + pad + col * (actualW + gap);
+        const top = offsetYBase + row * (actualH + gap);
+        
+        b.style.left = Math.round(left) + 'px';
+        b.style.top = Math.round(top) + 'px';
+        b.style.width = actualW + 'px';
+        b.style.height = actualH + 'px';
+      });
+    }
+
+    let t;
+    function onResize(){ clearTimeout(t); t = setTimeout(layoutBuildings, 80); }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('load', ()=>{ setTimeout(layoutBuildings, 120); });
+    setTimeout(layoutBuildings, 40);
+    window.layoutBuildings = layoutBuildings;
+  })();
+
+  /* ===========================
+     LOAD BUILDING IMAGES AUTOMATICALLY
+     Mapea imágenes por nombre de zona desde carpeta 'images/'
+     =========================== */
+  (function(){
+    const imageMap = {
+      recepcion: 'Recepción',
+      marketing: 'Marketing',
+      almacen_mp: 'Materia Prima', // nota: el nombre en la imagen tiene typo, ajustamos
+      laboratorio: 'Laboratorio',
+      sala_reuniones: 'Recepción', // reutilizar si no existe específica
+      enfermeria: 'Enfermeria',
+      produccion: 'Producción',
+      almacen_pt: 'Materia Prima', // o usar uno genérico
+      distribucion: 'Distribución',
+      mantenimiento: 'Mantenimiento' // ajustar según nombre real del archivo
+    };
+
+    // intentar cargar imágenes desde carpeta 'images/'
+    document.querySelectorAll('.building').forEach(b => {
+      const key = b.dataset.key;
+      const imageName = imageMap[key];
+      if(!imageName) return;
+      
+      // intentar múltiples formatos y variaciones
+      const imagePaths = [
+        `images/${imageName}.jpg`,
+        `images/${imageName}.png`,
+        `images/${imageName.toLowerCase().replace(/\s+/g, '_')}.jpg`,
+        `images/${imageName.toLowerCase().replace(/\s+/g, '_')}.png`
+      ];
+
+      // crear imagen temporal para validar
+      let loaded = false;
+      imagePaths.forEach(path => {
+        if(loaded) return;
+        const img = new Image();
+        img.onload = () => {
+          if(!loaded){
+            b.style.backgroundImage = `url('${path}')`;
+            loaded = true;
+          }
+        };
+        img.src = path;
+      });
+
+      // fallback: color de gradiente si no carga imagen
+      if(!loaded){
+        setTimeout(() => {
+          if(!b.style.backgroundImage){
+            const colors = ['#2d5a3d', '#4a7c5e', '#6b9e7f', '#3d6b4d', '#5a8a6f'];
+            b.style.background = colors[Math.floor(Math.random() * colors.length)];
+          }
+        }, 800);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
